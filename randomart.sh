@@ -1,5 +1,6 @@
 #!/bin/bash
-gpio mode -g 17 input
+echo "17" > /sys/class/gpio/export
+echo "in" > /sys/class/gpio/gpio17/direction
 array[0]="none"
 array[1]="negative"
 array[2]="solarise"
@@ -22,12 +23,13 @@ array[18]="colourbalance"
 array[19]="cartoon"
 size=${#array[@]}
 while true; do
-  PINSTATE=”$(gpio -g read 17)”
-  if [ ${PINSTATE} = “1” ]; then
-    index=$(($RANDOM % $size))
-    echo ${array[$index]}
-    raspistill -k  -ifx ${array[$index]}
-    fi
+  index=$(($RANDOM % $size))
+  echo ${array[$index]}
+  data="$(cat /sys/class/gpio/gpio17/value)"
+  if [ ${data} = "1" ]; then
+    TIME=$(date +"%Y-%m-%d_%H%M%S")
+    raspistill -ifx ${array[$index]} -o $TIME.jpg
+  fi
 done
 
 
